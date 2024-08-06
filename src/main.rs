@@ -1,28 +1,37 @@
-use crate::config::database::DatabaseTrait;
-use crate::config::{database, parameter};
 use std::sync::Arc;
 
+use config::database::Database;
+use sea_orm::DatabaseConnection;
+
+use crate::config::{ parameter, database };
+use migration::{ Migrator, MigratorTrait };
+
+mod middleware;
 mod config;
 mod handler;
-mod model;
+mod entities;
 mod response;
 mod routes;
 mod service;
 mod state;
-// TODO:: we currently removing CORS
+mod repository;
+mod dto;
+mod error;
 
 #[tokio::main]
 async fn main() {
     parameter::init();
-    let connection = database::Database::init()
-        .await
+    let database: Database = database::Database
+        ::init().await
         .unwrap_or_else(|e| panic!("Database error: {}", e.to_string()));
 
-    tracing_subscriber::fmt::init();
+    let connection: DatabaseConnection = database.connection.clone();
+
+    Migrator::up(&connection, None).await.unwrap();
+
     let host = format!("0.0.0.0:{}", parameter::get("PORT"));
     let listener = tokio::net::TcpListener::bind(host).await.unwrap();
 
-    axum::serve(listener, routes::root::routes(Arc::new(connection)))
-        .await
-        .unwrap_or_else(|e| panic!("Server error: {}", e.to_string()));
+    let app = routes::root::routes(Arc::new(database));
+    axum::serve(listener, app).await.unwrap_or_else(|e| panic!("Server error: {}", e.to_string()));
 }

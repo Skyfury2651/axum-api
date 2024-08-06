@@ -1,7 +1,6 @@
 use crate::config::database::Database;
-use crate::repository::user_repository;
-use crate::repository::user_repository::UserRepositoryTrait;
-use crate::service::token_service::{TokenService, TokenServiceTrait};
+use crate::repository::user_repository::{ self, UserRepositoryTrait };
+use crate::service::token_service::{ TokenService, TokenServiceTrait };
 use crate::service::user_service::UserService;
 use std::sync::Arc;
 

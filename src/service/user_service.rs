@@ -1,13 +1,14 @@
-use crate::config::database::{Database, DatabaseTrait};
-use crate::dto::user_dto::{UserReadDto, UserRegisterDto};
-use crate::entity::user::User;
+use sea_orm::{ DbErr, RuntimeErr, TryIntoModel };
+
+use crate::config::database::Database;
+use crate::dto::user_dto::{ UserReadDto, UserRegisterDto };
+use crate::entities::user::{ Model as User, NewUser };
 use crate::error::api_error::ApiError;
 use crate::error::db_error::DbError;
 use crate::error::user_error::UserError;
-use crate::repository::user_repository::{UserRepository, UserRepositoryTrait};
-use sqlx::Error as SqlxError;
+use crate::repository::user_repository::{ UserRepository, UserRepositoryTrait };
 use std::sync::Arc;
-
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct UserService {
     user_repo: UserRepository,
@@ -23,53 +24,67 @@ impl UserService {
     }
 
     pub async fn create_user(&self, payload: UserRegisterDto) -> Result<UserReadDto, ApiError> {
-        return match self.user_repo.find_by_email(payload.email.to_owned()).await {
+        let response = self.user_repo.find_by_email(payload.email.to_owned()).await;
+        return match response {
             Some(_) => Err(UserError::UserAlreadyExists)?,
             None => {
-                let user = self.add_user(payload).await;
+                let hashed_user = match UserService::generate_user_from_payload(payload) {
+                    Ok(user) => user,
+                    Err(error) => Err(DbError::SomethingWentWrong(error.to_string()))?,
+                };
+
+                let user = self.add_user(hashed_user).await;
 
                 return match user {
                     Ok(user) => Ok(UserReadDto::from(user)),
-                    Err(e) => match e {
-                        SqlxError::Database(e) => match e.code() {
-                            Some(code) => {
-                                if code == "23000" {
-                                    Err(DbError::UniqueConstraintViolation(e.to_string()))?
-                                } else {
-                                    Err(DbError::SomethingWentWrong(e.to_string()))?
+                    Err(error) => {
+                        match error {
+                            DbErr::Exec(RuntimeErr::SqlxError(error)) =>
+                                match error {
+                                    sqlx::Error::Database(e) => {
+                                        Err(DbError::UniqueConstraintViolation(e.to_string()))?
+                                    }
+                                    _ => panic!("Unexpected sqlx::Error kind"),
                                 }
-                            }
-                            _ => Err(DbError::SomethingWentWrong(e.to_string()))?,
-                        },
-                        _ => Err(DbError::SomethingWentWrong(e.to_string()))?,
-                    },
+                            _ => Err(DbError::SomethingWentWrong(error.to_string()))?,
+                        }
+                    }
                 };
             }
         };
     }
 
-    async fn add_user(&self, payload: UserRegisterDto) -> Result<User, SqlxError> {
-        let insert = sqlx::query_as!(
-            User,
-            r#"
-        INSERT INTO user (first_name, last_name, user_name, email, password, is_active)
-        VALUES (?, ?, ?, ?, ?, ?)
-        "#,
-            payload.first_name,
-            payload.last_name,
-            payload.user_name,
-            payload.email,
-            bcrypt::hash(payload.password, 4).unwrap(),
-            1
-        )
-        .execute(self.db_conn.get_pool())
-        .await?;
+    async fn add_user(&self, payload: UserRegisterDto) -> Result<User, DbErr> {
+        let user_model = NewUser {
+            last_name: payload.last_name.clone(),
+            first_name: payload.first_name.clone(),
+            email: payload.email,
+            password: payload.password,
+            user_name: payload.user_name,
+        };
 
-        let user = self.user_repo.find(insert.last_insert_id()).await?;
-        return Ok(user);
+        let user = self.user_repo.register(user_model).await?;
+        return Ok(user.try_into_model()?);
     }
 
     pub fn verify_password(&self, user: &User, password: &str) -> bool {
         return bcrypt::verify(password, &user.password).unwrap_or(false);
+    }
+
+    pub fn generate_user_from_payload(
+        payload: UserRegisterDto
+    ) -> Result<UserRegisterDto, DbError> {
+        let mut user_dto = payload.clone();
+
+        match bcrypt::hash(payload.password, 12) {
+            Ok(password) => {
+                user_dto.password = password;
+            }
+            Err(e) => {
+                return Err(DbError::SomethingWentWrong(e.to_string()));
+            }
+        }
+
+        Ok(user_dto)
     }
 }

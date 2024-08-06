@@ -1,0 +1,21 @@
+{
+    "git.confirmSync": false,
+    "editor.minimap.enabled": false,
+    "window.zoomLevel": 0,
+    "liveServer.settings.donotShowInfoMsg": true,
+    "workbench.startupEditor": "newUntitledFile",
+    "editor.formatOnSave": true,
+    "prettier.printWidth": 200,
+    "prettier.singleQuote": true,
+    "prettier.arrowParens": "always",
+    "editor.tabSize": 2,
+    "editor.tabCompletion": "on",
+    "prettier.tabWidth": 2,
+    "prettier.useTabs": false,
+    "prettier.semi": true,
+    "prettier.trailingComma": "es5",
+    "prettier.bracketSpacing": true,
+    "prettier.jsxBracketSameLine": false,
+    "prettier.proseWrap": "preserve",
+    "prettier.endOfLine": "lf"
+}
