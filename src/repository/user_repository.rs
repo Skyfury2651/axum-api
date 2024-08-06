@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::async_trait;
 use sea_orm::{ ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter };
-use crate::{ config::database::Database, entities::user::{ self, Entity as User, NewUser } };
+use crate::{ config::database::Database, entity::user::{ self, Entity as User, NewUser } };
 
 #[async_trait]
 pub trait UserRepositoryTrait {

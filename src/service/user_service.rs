@@ -2,7 +2,7 @@ use sea_orm::{ DbErr, RuntimeErr, TryIntoModel };
 
 use crate::config::database::Database;
 use crate::dto::user_dto::{ UserReadDto, UserRegisterDto };
-use crate::entities::user::{ Model as User, NewUser };
+use crate::entity::user::{ Model as User, NewUser };
 use crate::error::api_error::ApiError;
 use crate::error::db_error::DbError;
 use crate::error::user_error::UserError;

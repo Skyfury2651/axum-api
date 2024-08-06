@@ -9,7 +9,6 @@ use migration::{ Migrator, MigratorTrait };
 mod middleware;
 mod config;
 mod handler;
-mod entities;
 mod response;
 mod routes;
 mod service;
@@ -17,6 +16,7 @@ mod state;
 mod repository;
 mod dto;
 mod error;
+mod entity;
 
 #[tokio::main]
 async fn main() {

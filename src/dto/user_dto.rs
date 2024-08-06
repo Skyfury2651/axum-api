@@ -1,4 +1,4 @@
-use crate::entities::user::Model as User;
+use crate::entity::user::Model as User;
 use chrono::{ DateTime, Utc };
 use serde::{ Deserialize, Serialize };
 // A trait that the Validate derive will impl

@@ -1,5 +1,5 @@
 use crate::dto::user_dto::UserReadDto;
-use crate::entities::user::Model as User;
+use crate::entity::user::Model as User;
 use crate::response::api_response::ApiSuccessResponse;
 use axum::{ Extension, Json };
 
