@@ -6,32 +6,52 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# web application framework
 axum = "0.7.2"
+
+#date time rust like dayjs and carbon
 chrono = { version = "0.4.24", features = ["serde"] }
+
+# framework for serializing and deserializing Rust data structures
 serde = { version = "1.0.159", features = ["derive"] }
-serde_json = "1.0.95"
+
+# asynchronous runtime
 tokio = { version = "1.26.0", features = ["full"] }
 
+# hash method
 bcrypt = "0.14.0"
-sqlx = "0.7.4"
-# uuid = { version = "1.3.0", features = ["v4","serde"] }
-http = "1.1"
-tower = { version = "0.4.13", features = ["full"] }
-tower-http = { version = "0.4.0", features = ["full"] }
 
+# for sqlx error handle
+sqlx = "0.7.4"
+
+# for request response http handle
+http = "1.1"
+
+# modular and reusable components for building robust networking
+# enable integrate middleware 
+tower = { version = "0.4.13", features = ["full"] }
+
+# validator for rust
 validator = { version = "0.18.0", features = ["derive"] }
+
+# trait for throw error
 thiserror = "1.0.40"
-tracing-subscriber = "0.3.17"
+
+# allow access to local env
 dotenv = "0.15.0"
+
+# JWT for auth
 jsonwebtoken = "8.3.0"
+
+# allow async for trait 
 async-trait = "0.1.68"
 
+# database connector
 sea-orm = { version = "^0.12.0", features = [
     "sqlx-mysql",
     "runtime-async-std-native-tls",
     "macros",
 ] }
-futures = "0.3.28"
 
 migration = { path = "migration" }
 [workspace]
