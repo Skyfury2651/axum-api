@@ -8,10 +8,8 @@ pub struct Database {
 
 impl Database {
     pub async fn init() -> Result<Database, DbErr> {
-        let _database_url: &str = parameter::get("DATABASE_URL").leak();
-        let _db_name: &str = parameter::get("DATABASE_URL").leak();
-        let database_url: &str = "mysql://root:adminroot@localhost:3306";
-        let db_name: &str = "axum_api";
+        let database_url: &str = parameter::get("DATABASE_URL").leak();
+        let db_name: &str = parameter::get("DATABASE_NAME").leak();
         let db: Result<DatabaseConnection, DbErr> = sea_orm::Database::connect(database_url).await;
 
         let db: DatabaseConnection = match db {

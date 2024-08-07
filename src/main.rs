@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
+use config::{ parameter, database };
 use config::database::Database;
 use sea_orm::DatabaseConnection;
-
-use crate::config::{ parameter, database };
 use migration::{ Migrator, MigratorTrait };
 
 mod middleware;
