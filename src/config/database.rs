@@ -1,6 +1,8 @@
+use std::time::Duration;
+
 use crate::parameter;
 
-use sea_orm::{ DatabaseConnection, ConnectionTrait, DbBackend, DbErr, Statement };
+use sea_orm::{ ConnectOptions, ConnectionTrait, DatabaseConnection, DbBackend, DbErr, Statement };
 
 pub struct Database {
     pub connection: DatabaseConnection,
@@ -10,6 +12,13 @@ impl Database {
     pub async fn init() -> Result<Database, DbErr> {
         let database_url: &str = parameter::get("DATABASE_URL").leak();
         let db_name: &str = parameter::get("DATABASE_NAME").leak();
+        let mut opt = ConnectOptions::new(database_url);
+        opt.max_connections(1000)
+            .min_connections(5)
+            .connect_timeout(Duration::from_secs(8))
+            .idle_timeout(Duration::from_secs(8))
+            .sqlx_logging(false);
+
         let db: Result<DatabaseConnection, DbErr> = sea_orm::Database::connect(database_url).await;
 
         let db: DatabaseConnection = match db {
@@ -19,7 +28,7 @@ impl Database {
             }
             Err(error) => {
                 println!("{:#?}", error);
-                panic!("Problem opening the file: {error:?}");
+                panic!("Problem when try connecting to database: {error:?}");
             }
         };
 

@@ -15,3 +15,9 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(DeriveIntoActiveModel)]
+pub struct NewTodo {
+    pub title: String,
+    pub content: String,
+}
